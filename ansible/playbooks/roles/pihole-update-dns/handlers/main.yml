@@ -1,0 +1,22 @@
+---
+- name: restart pihole-FTL service
+  shell:
+    cmd: docker exec -it {{ pihole_container_name }} pihole restartdns
+  tags:
+    - pihole
+    - pihole-update-dns
+
+- name: restart pihole container
+  shell: docker restart {{ pihole_container_name }}
+  tags:
+    - pihole
+    - pihole-update-dns
+
+- name: reboot node
+  reboot:
+    reboot_timeout: 300
+  become: true
+  register: reboot_info
+  tags:
+    - pihole
+    - pihole-update-dns

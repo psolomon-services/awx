@@ -1,0 +1,65 @@
+# See:  https://medium.com/geekculture/a-simple-ca-setup-with-kubernetes-cert-manager-bc8ccbd9c2
+# See:  https://gist.githubusercontent.com/jakexks/c1de8238cbee247333f8c274dc0d6f0f/raw/47658bb0f863545ed0be61f1373202f9d62fbb6c/cert-manager-test.sh (can't find original repo)
+# or: https://gist.github.com/jakexks/c1de8238cbee247333f8c274dc0d6f0f
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-cluster-issuer
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: test-ca
+  secretName: test-ca
+  subject:
+    organizations:
+      - Paulco AWX Server Issuer
+    organizationalUnits:
+      - AWX1
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: test-ca-cluster-issuer
+spec:
+  ca:
+    secretName: test-ca
+
+#---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  annotations:
+#    cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+#  name: test-ingress
+#  namespace: ingress-test
+#spec:
+#  rules:
+#  - host: example.com
+#    http:
+#      paths:
+#      - pathType: Prefix
+#        path: /
+#        backend:
+#          service:
+#            name: myservice
+#            port:
+#              number: 80
+#  tls:
+#  - hosts:
+#    - example.com
+#    secretName: myingress-cert

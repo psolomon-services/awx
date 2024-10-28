@@ -1,0 +1,43 @@
+---
+awx_volume_dir:               '/opt/awx'
+
+#awx_controller_host:          'http://localhost:9082'
+#awx_controller_host:          'http://172.16.1.3:9082'
+awx_controller_host:          'http://127.0.0.1:9082'
+org_name:                     'paulco'
+project_name:                 'services'
+inventory_name:               'github inventory'
+inventory_source_name:        'github inventory source'
+
+vault_credential_name:        'ansible vault password'
+vault_test_credential_name:   'ansible test vault password'
+
+ssh_machine_credential_name:  'ssh machine credential'
+ssh_scm_credential_name:      'ssh scm credential'
+
+github_username:              'psolomon-services'
+github_repo:                  'git@github.com:{{ github_username }}/argocd-test'
+github_branch:                'main'
+
+awx_admin_username:           'admin'
+awx_admin_email:              'services@pauljsolomon.net'
+awx_default_user_username:    'ansible'
+awx_default_user_email:       'services@pauljsolomon.net'
+
+local_ssh_dir:                '/home/ansible/.ssh'
+
+awx_container_image:          'ansible/awx:17.1.0'
+redis_container_image:        'redis'
+postgres_container_image:     'postgres:12'
+postgres_username:            'awx'
+
+# by default, do not force restart of containers (needed for initial troubleshooting)
+force_recreate_container:     false
+# by default, do not force recreation of node mount dirs (needed for initial troubleshooting)
+force_recreate_volume_dirs:   false
+
+dns_servers:
+  - 192.168.1.193
+  - 192.168.1.197
+dns_search_domains:
+  - 'pauljsolomon.net'

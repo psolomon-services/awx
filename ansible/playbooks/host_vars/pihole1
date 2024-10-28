@@ -1,0 +1,4 @@
+ENV:                PROD
+ansible_host:       192.168.1.193  #pihole.pauljsolomon.net
+pihole_hostname:    pihole-main
+nginx_pihole_host:  pihole.pauljsolomon.net

@@ -1,0 +1,63 @@
+# - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+# - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+configs:
+  cm:
+    # -- Timeout to discover if a new manifests version got published to the repository
+    #timeout.reconciliation: 180s
+    timeout.reconciliation: 30s
+    # -- Timeout to refresh application data as well as target manifests cache
+    #timeout.hard.reconciliation: 0s
+    timeout.hard.reconciliation: 30s
+
+  secret:
+    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+    # htpasswd -nbBC 10 "" mywebpassword | tr -d ':\n' | sed 's/$2y/$2a/'
+    argocdServerAdminPassword: "$2a$10$gO3XyeyNHZX6es2QPgTTVuqEcT2QD2eyveerOPxQDWLhU2.vSr15q"
+    # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+    #argocdServerAdminPasswordMtime: ""
+
+server:
+  service:
+    type: ClusterIP
+    # use LB in EKS for argocd until ingress is solved with grpc
+    #type: LoadBalancer
+
+  ingress:
+    enabled: true
+    tls: true
+
+    hostname: argocd.pauljsolomon.net
+    path: /
+    pathType: Prefix
+
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+    controller: generic
+    ingressClassName: nginx
+
+    #aws:
+      #backendProtocolVersion: HTTP
+      #serviceType: NodePort
+
+  ingressGrpc:
+    enabled: true
+    tls: false
+
+    hostname: grpc.argocd.pauljsolomon.net
+    path: /
+    pathType: Prefix
+    controller: generic
+    ingressClassName: nginx
+
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      kubernetes.io/ingress.class: nginx
+      #cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+
+  metrics:
+    enabled: true

@@ -1,0 +1,12 @@
+---
+kind: JobTemplate
+apiVersion: tower.ansible.com/v1alpha1
+metadata:
+  name: jobtemplate-4
+  namespace: awx
+spec:
+  connection_secret: awx-access
+  job_template_name: ExampleJobTemplate4
+  job_template_project: "Demo Project"
+  job_template_playbook: "hello_world.yml"
+  job_template_inventory: "Demo Inventory"

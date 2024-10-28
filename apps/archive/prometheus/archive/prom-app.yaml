@@ -1,0 +1,23 @@
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  destination:
+    #namespace: prometheus
+    namespace: argocd
+    server: "https://kubernetes.default.svc"
+  project: prometheus
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 45.6.0
+    chart: kube-prometheus-stack
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

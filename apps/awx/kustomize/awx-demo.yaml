@@ -1,0 +1,49 @@
+# https://docs.ansible.com/automation-controller/4.0.0/html_zh/administration/operator_advanced_configurations.html
+# https://ansible.readthedocs.io/projects/awx-operator/en/latest/user-guide/network-and-tls-configuration.html?h=ingress_type#ingress-type
+# https://jplace.nl/posts/How-to-enable-https-on-awx/
+# https://cert-manager.io/docs/configuration/
+# https://cert-manager.io/docs/configuration/selfsigned/
+
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx-demo
+  namespace: awx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  service_type: clusterip
+  #service_type: loadbalancer
+
+  ingress_class_name: nginx
+  hostname: awx.pauljsolomon.net
+
+  #subject:
+  #  organizations:
+  #    - Paulco Jenkins Server
+  #  organizationalUnits:
+  #    - Jenkins1
+
+  # see:  https://jplace.nl/posts/How-to-enable-https-on-awx/
+  # see:  https://ansible.readthedocs.io/projects/awx-operator/en/latest/user-guide/network-and-tls-configuration.html
+  ingress_type: ingress
+  ingress_hosts:
+    - hostname: awx.pauljsolomon.net
+      tls_secret: awx-server-tls
+  nodeport_port: 443
+  ingress_annotations: |
+    #kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+
+  # deprecated
+  ingress_tls_secret: awx-server-tls
+
+  # https://ansible.readthedocs.io/projects/awx-operator/en/latest/user-guide/advanced-configuration/scaling-the-web-and-task-pods-independently.html
+  web_replicas: 1
+  task_replicas: 1
+
+  image_pull_policy: Always
+
+  #web_extra_env: |
+  #  - name: PJS
+  #    value: rocks

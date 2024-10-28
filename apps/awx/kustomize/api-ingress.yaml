@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  labels:
+  name: awx-api-ingress
+  namespace: awx
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: awxapi.pauljsolomon.net
+    http:
+      paths:
+      - backend:
+          service:
+            name: awx-demo-service
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  #tls:
+  #- hosts:
+  #  - awx.pauljsolomon.net
+  #  secretName: awx-server-tls

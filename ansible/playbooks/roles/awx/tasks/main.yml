@@ -1,0 +1,105 @@
+---
+- name:  create admin user
+  ignore_errors: true
+  shell: |
+    kubectl exec -n awx svc/awx-demo-service -- awx-manage createsuperuser --username={{ awx_admin_username }} --email={{ awx_admin_email }} --noinput
+
+- name:  set admin password for AWX UI
+  shell: |
+    kubectl exec -n awx svc/awx-demo-service -- awx-manage update_password --username={{ awx_admin_username }} --password={{ secrets.awx.awx_admin_password }}
+
+
+#######################################################
+
+- name:  get access token for awx, for accessing awx.awx collection modules
+  shell:    "kubectl exec -it -n awx deploy/awx-demo-task -- awx-manage create_oauth2_token --user admin"
+  #no_log:   true
+  register: awx_token_log
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv
+
+- name: set token variable
+  set_fact:
+    awx_access_token:  '{{ awx_token_log.stdout }}'
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv
+
+- name: access token output
+  debug:
+    msg:  "awx_access_token {{ awx_access_token }}"
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv
+
+###############################################################################
+# NOTE:  the following tasks call awx.awx collections modules to create the
+#        remaining settings in the AWX UI
+#
+# NOTE:  must pass controller access token to each module because it is a
+#        dynamic variable.  static variables do not need to be passed.
+###############################################################################
+
+- name:  create awx orgs
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-orgs.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+
+- name:  create additional awx users
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-users.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+
+- name:  create awx credentials
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-credentials.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+
+- name:  create awx projects
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-projects.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv
+
+- name:  create awx inventory
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-inventories.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv
+
+- name:  create awx jobs
+  import_tasks: ../roles/awx/tasks/ui/awx-ui-jobs.yml
+  vars:
+    awx_access_token0:     '{{ awx_access_token }}'
+  tags:
+    - awx
+    - awx_ui
+
+###############################################################################
+
+- name: config completed
+  debug:
+    msg:  "completed awx tasks"
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv

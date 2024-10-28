@@ -1,0 +1,12 @@
+---
+- name: create awx organization
+  awx.awx.organization:
+    name:                   '{{ org_name }}'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+    galaxy_credentials:
+      - Ansible Galaxy
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui

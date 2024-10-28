@@ -1,0 +1,24 @@
+# example of cert generated and self-signed by the cluster issuer (test-ca-cluster-issuer, set up in the install/04-cert-manager setup)
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-cert
+spec:
+  secretName: test-server-tls
+  isCA: false
+  commonName: test-server-tls
+  subject:
+    organizations:
+      - Test AWX Server
+    organizationalUnits:
+      - Test1
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+  - "test.pauljsolomon.net"
+  - "test"
+  issuerRef:
+    name: test-ca-cluster-issuer
+    kind: ClusterIssuer

@@ -1,0 +1,20 @@
+---
+# example run:
+#   ansible-playbook --vault-password-file vault-passwd playbooks/jenkins.yml -l jenkins-staging --tags jenkins
+
+- name: Jenkins Deploy SANDBOX
+  hosts:         jenkins
+  remote_user:   ansible
+  gather_facts:  true
+
+  vars_files:
+    - group_vars/vault.yml
+
+  vars:
+    - force_recreate_container:    true
+    - force_recreate_volume_dirs:  true
+
+  roles:
+    - docker
+    - nginx-proxy
+    - jenkins

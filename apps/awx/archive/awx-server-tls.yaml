@@ -1,0 +1,28 @@
+# See:  https://medium.com/geekculture/a-simple-ca-setup-with-kubernetes-cert-manager-bc8ccbd9c2
+# See:  https://gist.githubusercontent.com/jakexks/c1de8238cbee247333f8c274dc0d6f0f/raw/47658bb0f863545ed0be61f1373202f9d62fbb6c/cert-manager-test.sh (can't find original repo)
+# or: https://gist.github.com/jakexks/c1de8238cbee247333f8c274dc0d6f0f
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: awx-server-tls
+  namespace: awx
+spec:
+  secretName: awx-server-tls
+  isCA: false
+  commonName: awx-server-tls
+  subject:
+    organizations:
+      - Paulco AWX Server
+    organizationalUnits:
+      - AWX1
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+  - "awx.pauljsolomon.net"
+  - "awx"
+  issuerRef:
+    name: test-ca-cluster-issuer
+    kind: ClusterIssuer

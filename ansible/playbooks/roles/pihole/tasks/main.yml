@@ -1,0 +1,93 @@
+---
+#- name: copy resolved file to disable ubuntu port 53 crap
+#  copy: 
+#    src:     templates/resolved.conf
+#    dest:    /etc/systemd/resolved.conf
+#    backup:  true
+#  become:  true
+#  notify:
+#    - reboot node
+#  tags:
+#    - pihole
+
+###############################
+# NGINX container info
+
+#- name: Get info on the nginx container
+#  docker_container_info:
+#    name: '{{ nginx_container_name }}'
+#  register: nginx_container_info
+#  tags:
+#    - pihole
+
+#- name:  record IP of nginx-proxy container
+#  set_fact:
+#    nginx_ip_address:  '{{ nginx_container_info.container.NetworkSettings.Networks.nginx_proxy.IPAddress }}'
+#  tags:
+#    - pihole
+
+#- name: print address of nginx-proxy container
+#  debug:  var=nginx_ip_address
+#  tags:
+#    - pihole
+
+###############################
+# WAIT FOR CONTAINERS
+
+# NOTE:  this is a fixed IP to ensure it does not change between restarts, otherwise it will break the pihole associated with it
+#- name: ensure the unbound container running
+#  wait_for:
+#    host:             "{{ unbound_ip_address }}"
+#    port:             53
+#    connect_timeout:  3
+#    delay:            3
+#    timeout:          30
+#  tags:
+#    - pihole
+#
+#- name: ensure the nginx-proxy container is running
+#  wait_for:
+#    host:             "{{ nginx_ip_address }}"
+#    port:             80
+#    connect_timeout:  3
+#    delay:            3
+#    timeout:          30
+#  tags:
+#    - pihole
+
+###############################
+
+#- name: create pihole container {{ pihole_container_name }} from {{ pihole_container_image }}
+#  docker_container:
+#    name:            '{{ pihole_container_name }}'
+#    image:           '{{ pihole_container_image }}'
+#    pull:            true
+#    hostname:        '{{ pihole_hostname }}'
+#    state:           started
+#    restart_policy:  unless-stopped
+#    # normally defaults to "false"
+#    recreate:        '{{ force_recreate_container }}'
+#    published_ports:
+#      - "53:53/tcp"
+#      - "53:53/udp"
+#      # only for debugging if there are nginx-proxy and/or DNS problems
+#      - "9080:80"
+#    env:
+#      TZ:                 '{{ tz }}'
+#      WEBPASSWORD:        '{{ secrets.pihole.pihole_web_password }}'  # 'set a secure password here or it will be random'
+#      # nginx reverse proxy settings
+#      VIRTUAL_HOST:       '{{ nginx_pihole_host }}'
+#      VIRTUAL_PORT:       "80"
+#      # unbound ip addr obtained in the unbound role
+#      DNS1:               '{{ unbound_ip_address }}#53'
+#      #DNS2:              "no"
+#      INTERFACE:          "eth0"
+#      DNSMASQ_LISTENING:  "single"
+#    volumes:
+#      # had DNS probs with the gravity restart (pihole -g), so mount host resolv.conf file
+#      - "/etc/resolv.conf:/etc/resolv.conf"
+#    networks:
+#      - name: '{{ docker_network_name }}'
+#  tags:
+#    - pihole
+

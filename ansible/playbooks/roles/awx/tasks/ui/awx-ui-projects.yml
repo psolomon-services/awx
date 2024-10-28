@@ -1,0 +1,20 @@
+---
+- name: add awx project
+  awx.awx.project:
+    name:                   '{{ project_name }}'
+    organization:           '{{ org_name }}'
+    credential:             '{{ ssh_scm_credential_name }}'
+    scm_type:               git
+    scm_url:                '{{ github_repo }}'
+    scm_branch:             '{{ github_branch }}'
+    timeout:                180
+    wait:                   true
+    update_project:         true
+    scm_update_on_launch:   false
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+    - awx_ui_inv

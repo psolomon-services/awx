@@ -1,0 +1,4 @@
+---
+# we are dependant on this in order to get the container IP for upstream dns config
+dependencies:
+  - { role: unbound }

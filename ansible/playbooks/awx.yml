@@ -1,0 +1,20 @@
+--- 
+- name: AWX Deploy SANDBOX
+  hosts:         deploy1
+  #hosts:         laptop
+  remote_user:   ansible
+  #remote_user:   psolomon
+  gather_facts:  true
+  #become:        true
+
+  vars_files:
+    - group_vars/vault.yml
+
+  vars:
+    force_recreate_container:     true
+    force_recreate_volume_dirs:   true
+
+  roles:
+    #- docker
+    #- nginx-proxy
+    - awx

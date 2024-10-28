@@ -1,0 +1,15 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
+kind: RoleBinding
+metadata:
+  name: readonlyuser
+  namespace: default
+subjects:
+  - kind: User
+    name: pjs
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: readonlyuser
+  apiGroup: rbac.authorization.k8s.io

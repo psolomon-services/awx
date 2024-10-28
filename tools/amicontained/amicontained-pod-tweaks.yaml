@@ -1,0 +1,26 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: amicontained-tweaks
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: amicontained
+      #image: r.j3ss.co/amicontained:v0.4.9
+      image: jess/amicontained:v0.4.9
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "amicontained" ]
+      securityContext:
+        capabilities:
+          add: ["SYS_TIME"]
+          drop: ["NET_BIND_SERVICE"]
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        privileged: false

@@ -1,0 +1,16 @@
+---
+- name: Portainer Agent Deploy PROD
+  hosts:         all,!staging,!services1
+  remote_user:   ansible
+  gather_facts:  true
+
+  vars_files:
+    - group_vars/vault.yml
+
+  vars:
+    # recreate all docker containers and volume dirs when deploying (nginx-proxy, unbound, and pihole)
+    - force_recreate_container:  false
+
+  roles:
+    - docker
+    - portainer-agent

@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+  #namespace: test
+spec:
+  containers:
+    - name: nginx
+      env:
+        - name: MYSECRET
+          valueFrom:
+            secretKeyRef:
+              name: mysecret2
+              key:  mysecret
+      image: nginx
+      ports:
+        - containerPort: 80

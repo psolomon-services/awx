@@ -1,0 +1,5 @@
+grafana:
+  ingress:
+    enabled: true
+  defaultDashboardsTimezone: utc
+

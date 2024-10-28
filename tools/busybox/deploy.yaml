@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox
+  labels:
+    app: busybox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      hostNetwork: true
+      containers:
+        - name: busybox
+          image: busybox
+          command:
+            - "sh"
+            - "-c"
+            - "echo 'Hello' > /var/www/index.html && httpd -f -p 8080 -h /var/www/"
+            #- "echo 'Hello' > /var/www/index.html && httpd -f -p 8280 -h /var/www/"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              hostPort: 8080

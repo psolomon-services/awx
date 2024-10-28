@@ -1,0 +1,11 @@
+---
+- name: Ping Ansible Hosts
+  hosts:         all
+  remote_user:   ansible
+  gather_facts:  true
+
+  tasks:
+    - name: ping ansible hosts
+      ping:
+      tags:
+        - ping

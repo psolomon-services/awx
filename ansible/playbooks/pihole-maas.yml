@@ -1,0 +1,13 @@
+---
+- name: Pihole Setup SANDBOX
+  hosts:         services1.maas
+  remote_user:   ubuntu
+  gather_facts:  true
+
+  tasks:
+    - docker
+    - unbound
+    - nginx-proxy
+    - pihole
+    - pihole-update-dns
+    - pihole-update-adlists

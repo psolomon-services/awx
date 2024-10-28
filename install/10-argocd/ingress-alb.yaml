@@ -1,0 +1,85 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: alb
+    #cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    # Use this annotation (which must match a service name) to route traffic to HTTP2 backends.
+    alb.ingress.kubernetes.io/conditions.argogrpc: |
+      [{"field":"http-header","httpHeaderConfig":{"httpHeaderName": "Content-Type", "values":["application/grpc"]}}]
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+
+    alb.ingress.kubernetes.io/force-ssl-redirect: "true"
+    alb.ingress.kubernetes.io/ssl-passthrough: "true"
+
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    #alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+  name: argocd
+  namespace: argocd
+spec:
+  ingressClassName: alb
+
+  rules:
+  - host: argocd.pauljsolomon.net
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: argogrpc
+            port:
+              #number: 443
+              name: http
+        pathType: Prefix
+      - path: /
+        backend:
+          service:
+            name: argocd-server
+            port:
+              #number: 443
+              name: http
+        pathType: Prefix
+  #tls:
+  #- secretName: argocd-server-tls
+  #  hosts:
+  #  - argocd.pauljsolomon.net
+
+
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: argocd-server-ingress
+#  namespace: argocd
+#  annotations:
+#    alb.ingress.kubernetes.io/force-ssl-redirect: "true"
+#    alb.ingress.kubernetes.io/ssl-passthrough: "true"
+#    kubernetes.io/ingress.class: alb
+#    cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+#
+#    alb.ingress.kubernetes.io/scheme: internet-facing
+#    alb.ingress.kubernetes.io/target-type: ip
+#    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+#    alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+#spec:
+#  ingressClassName: alb
+#
+#  tls:
+#    - secretName: argocd-server-tls
+#      hosts:
+#        - argocd.pauljsolomon.net
+#
+#  rules:
+#  - host: argocd.pauljsolomon.net
+#    http:
+#      paths:
+#      - path: /
+#        pathType: Prefix
+#        backend:
+#          service:
+#            name: argocd-server
+#            port:
+#              #name: https
+#              number: 443

@@ -1,0 +1,33 @@
+---
+- name: UniFi Controller Facts Ansible Module Test
+  hosts:         all
+  become:        true
+  gather_facts:  true
+
+  # load global config
+  vars:
+    #host_key_checking: False
+    #accept_hostkey:    True
+    #ansible_python_interpreter:    /usr/bin/python3
+    #verify_ssl: false
+    #- config.yml
+
+  # load global config
+  vars_files:
+    - group_vars/vault.yml
+
+  tasks:
+    - name: List online clients
+      unifi_controller_facts:
+        controller_baseURL: "https://192.168.1.1:8443"
+        controller_username: "admin"
+        # taken from ansible vault (vars/secrets.yml)
+        controller_password: '{{ secrets.unifi.controller_password }}'
+        controller_site: "default"
+        query: list_online_clients
+      register: returnedData
+      ignore_errors: true
+
+    - name: debug
+      debug:
+        msg: "{{ returnedData | to_nice_json(indent=2) }}"

@@ -1,0 +1,136 @@
+---
+- name: remove jenkins volume dirs, as per the force_recreate_volume_dirs flag
+  file:
+    path:   /opt/jenkins
+    state:  absent
+  become:  true
+  when:  force_recreate_volume_dirs|bool
+  tags:
+    - jenkins
+
+- name:  create host dirs for jenkins home and certs
+  file:
+    path:   '{{ item }}'
+    state:  directory
+    owner:  ansible
+    group:  docker
+  loop:
+    - /opt/jenkins/jenkins_home
+    - /opt/jenkins/certs
+  become:  true
+  tags:
+    - jenkins
+
+# couldn't insert this correctly into the casc file, so hardcoded in case vault file for now
+#- name: get private key for casc template creation
+#  set_fact:
+#    ansible_user_private_key:  "{{ lookup('file', '/home/ansible/.ssh/id_rsa') }}"
+#  delegate_to:  localhost
+#  tags:
+#    - jenkins
+
+#- name:  copy casc config for autoconfiguring jenkins
+#  template:
+#    src:    templates/casc.yml.vault.j2
+#    dest:   /opt/jenkins/jenkins_home/casc.yml
+#    owner:  ansible
+#    group:  docker
+#  become:  true
+#  tags:
+#    - jenkins
+
+- name: create jenkins container {{ jenkins_container_name }} from {{ jenkins_container_image }}
+  docker_container:
+    name:            '{{ jenkins_container_name }}'
+    image:           '{{ jenkins_container_image }}'
+    pull:            true
+    hostname:        '{{ jenkins_hostname }}'
+    state:           started
+    restart_policy:  unless-stopped
+    # fixes /var/run/docker.sock perms problem
+    user: 0
+    # normally defaults to "false"
+    recreate:        '{{ force_recreate_container }}'
+    published_ports:
+      - "6080:8080"
+      - "2222:2222"
+    exposed_ports:
+      - "8080"
+      - "2222"
+    env:
+      VIRTUAL_HOST:         '{{ nginx_jenkins_host }}'
+      VIRTUAL_PORT:         "8080"
+      JAVA_OPTS:            '-Djenkins.install.runSetupWizard=false -Dpermissive-script-security.enabled=no_security'
+      JENKINS_URL:          '{{ nginx_jenkins_host }}'
+      #CASC_JENKINS_CONFIG:  '/var/jenkins_home/casc.yml'
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/opt/jenkins/certs:/certs/client"
+      - "/opt/jenkins/jenkins_home:/var/jenkins_home"
+    networks:
+      - name: '{{ docker_network_name }}'
+  register: jenkins_container_info
+  tags:
+    - jenkins
+
+########################################
+
+- name:  record IP of jenkins container
+  set_fact:
+    ip_address_jenkins:  '{{ jenkins_container_info.container.NetworkSettings.Networks.nginx_proxy.IPAddress }}'
+  tags:
+    - jenkins
+
+- name: print address of jenkins container
+  debug:  var=ip_address_jenkins
+  tags:
+    - jenkins
+
+#TODO:  USE AWX WAIT_FOR MODULE
+- name: ensure the jenkins container is running
+  wait_for:
+    host:             "{{ ip_address_jenkins }}"
+    port:             8080
+    connect_timeout:  3
+    delay:            3
+    timeout:          30
+  tags:
+    - jenkins
+
+###############################
+
+- name: copy plugin file to parent node
+  copy:
+    src:  templates/plugins.txt
+    dest: /tmp/plugins.txt
+    owner: ansible
+    group: docker
+  tags:
+    - jenkins
+
+- name: install jenkins plugins inside of jenkins container
+  ansible.builtin.shell: |
+    docker cp /tmp/plugins.txt {{ jenkins_container_name }}:/usr/share/jenkins/ref/plugins.txt
+    docker exec {{ jenkins_container_name }} jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+  tags:
+    - jenkins
+
+###############################
+
+- name: restart the jenkins container
+  docker_container:
+    name:       '{{ jenkins_container_name }}'
+    restart:    true
+  tags:
+    - jenkins
+
+#TODO:  USE AWX WAIT_FOR MODULE
+- name: ensure the jenkins container is running
+  wait_for:
+    host:             "{{ ip_address_jenkins }}"
+    port:             8080
+    connect_timeout:  3
+    delay:            3
+    timeout:          30
+  tags:
+    - jenkins

@@ -1,0 +1,13 @@
+---
+- name: Pihole Adlist Update
+  hosts:         pihole
+  # since we don't have many piholes, deploy these serially, for readbility
+  serial:        1
+  remote_user:   ansible
+  gather_facts:  false
+
+  vars_files:
+    - group_vars/vault.yml
+
+  roles:
+    - pihole-update-adlists

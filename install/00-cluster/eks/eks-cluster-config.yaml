@@ -1,0 +1,20 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: argocd
+  region: us-east-1
+  #version: '1.25'
+  version: '1.24'
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      attachPolicyARNs:
+        - arn:aws:iam::913076961925:policy/AWSLoadBalancerControllerIAMPolicy
+managedNodeGroups:
+  - name: main-argocd
+    instanceType: m5.large
+    desiredCapacity: 2
+    privateNetworking: true

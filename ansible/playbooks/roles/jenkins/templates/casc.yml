@@ -1,0 +1,205 @@
+jenkins:
+  #systemMessage:          "Jenkins configured by Ansible and Jenkins Configuration as Code plugin\n\n{{ ansible_managed }}\n\n"
+  systemMessage:          "Jenkins configured by Ansible and Jenkins Configuration as Code plugin"
+  numExecutors:           0
+  scmCheckoutRetryCount:  2
+  mode:                   NORMAL
+  remotingSecurity:
+    enabled: false
+
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key:   FOO
+            value: BAR
+
+  authorizationStrategy:
+    #loggedInUsersCanDoAnything:
+    #  allowAnonymousRead: false
+    globalMatrix:
+      permissions:
+      - "GROUP:Agent/Build:authenticated"
+      - "GROUP:Agent/Create:authenticated"
+      - "GROUP:Agent/Delete:authenticated"
+      - "GROUP:Job/Build:authenticated"
+      - "GROUP:Job/Cancel:authenticated"
+      - "GROUP:Job/Configure:authenticated"
+      - "GROUP:Job/Create:authenticated"
+      - "GROUP:Job/Delete:authenticated"
+      - "GROUP:Job/Discover:authenticated"
+      - "GROUP:Job/Move:authenticated"
+      - "GROUP:Job/Read:authenticated"
+      - "GROUP:Job/Workspace:authenticated"
+      - "GROUP:Overall/Read:authenticated"
+      - "GROUP:Run/Delete:authenticated"
+      - "GROUP:Run/Update:authenticated"
+      - "GROUP:SCM/Tag:authenticated"
+      - "GROUP:View/Configure:authenticated"
+      - "GROUP:View/Create:authenticated"
+      - "GROUP:View/Delete:authenticated"
+      - "GROUP:View/Read:authenticated"
+      - "USER:Agent/Build:{{ jenkins_admin_username }}"
+      - "USER:Agent/Configure:{{ jenkins_admin_username }}"
+      - "USER:Agent/Connect:{{ jenkins_admin_username }}"
+      - "USER:Agent/Create:{{ jenkins_admin_username }}"
+      - "USER:Agent/Delete:{{ jenkins_admin_username }}"
+      - "USER:Agent/Disconnect:{{ jenkins_admin_username }}"
+      - "USER:Credentials/Create:{{ jenkins_admin_username }}"
+      - "USER:Credentials/Delete:{{ jenkins_admin_username }}"
+      - "USER:Credentials/ManageDomains:{{ jenkins_admin_username }}"
+      - "USER:Credentials/Update:{{ jenkins_admin_username }}"
+      - "USER:Credentials/View:{{ jenkins_admin_username }}"
+      - "USER:Job/Build:{{ jenkins_admin_username }}"
+      - "USER:Job/Cancel:{{ jenkins_admin_username }}"
+      - "USER:Job/Configure:{{ jenkins_admin_username }}"
+      - "USER:Job/Create:{{ jenkins_admin_username }}"
+      - "USER:Job/Delete:{{ jenkins_admin_username }}"
+      - "USER:Job/Discover:{{ jenkins_admin_username }}"
+      - "USER:Job/Move:{{ jenkins_admin_username }}"
+      - "USER:Job/Read:{{ jenkins_admin_username }}"
+      - "USER:Job/Workspace:{{ jenkins_admin_username }}"
+      - "USER:Overall/Administer:{{ jenkins_admin_username }}"
+      - "USER:Overall/Read:{{ jenkins_admin_username }}"
+      - "USER:Run/Delete:{{ jenkins_admin_username }}"
+      - "USER:Run/Replay:{{ jenkins_admin_username }}"
+      - "USER:Run/Update:{{ jenkins_admin_username }}"
+      - "USER:SCM/Tag:{{ jenkins_admin_username }}"
+      - "USER:View/Configure:{{ jenkins_admin_username }}"
+      - "USER:View/Create:{{ jenkins_admin_username }}"
+      - "USER:View/Delete:{{ jenkins_admin_username }}"
+      - "USER:View/Read:{{ jenkins_admin_username }}"
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id:       "{{ jenkins_admin_username }}"
+         password: "{{ secrets.jenkins.jenkins_admin_password }}"
+       - id:       "{{ jenkins_ansible_username }}"
+         password: "{{ secrets.jenkins.jenkins_ansible_password }}"
+
+  clouds:
+   - docker:
+       name: "docker"
+       dockerApi:
+         dockerHost:
+           uri: "unix:///var/run/docker.sock"
+       templates:
+         - labelString: "docker-agent"
+           dockerTemplateBase:
+             # TODO: pin sha256 or versions when using in production
+             image: "jenkins/agent"
+             mounts:
+               - "type=tmpfs,destination=/run"
+               - "type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock"
+               - "type=volume,src=hello,dst=/world"
+             environmentsString: |
+               hello=world
+               foo=bar
+           remoteFs: "/home/jenkins/agent"
+           connector:
+             attach:
+               user: "jenkins"
+           instanceCapStr: "10"
+           retentionStrategy:
+             idleMinutes: 1
+
+security:
+  globalJobDslSecurityConfiguration:
+    useScriptSecurity: false
+  gitHostKeyVerificationConfiguration:
+    sshHostKeyVerificationStrategy: "noHostKeyVerificationStrategy"
+  sSHD:
+    port: 2222
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basicSSHUserPrivateKey:
+              scope: GLOBAL
+              id: ssh_for_ansible
+              username: ansible
+              description: "SSH passphrase with private key file. Private key provided"
+              privateKeySource:
+                directEntry:
+                  privateKey: |
+                    -----BEGIN OPENSSH PRIVATE KEY-----
+                    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
+                    NhAAAAAwEAAQAAAYEArLS7OtCwI5tCVWhYTcZL2T6EsvCaGaMV2M0HSeQPpRj92cVa9pNt
+                    dUh15COH36U+LiLeDiXOnrzjdct0dYmrzkjfg8sBfJ3aj3LWP8cXbn92V2jT29Rj3bjAo+
+                    vWI0SqaYbp1uVc6MXlixk35AvEumIfrxLZGjUv+ovG73BhiHsMvNI5IbrmXVaTVU514cWH
+                    2Z7dtqjI9LThQTe+VXu88Ms+UXDmskztsqIK7SmpZFMKqvZrvW0XPYtecnZtje/xPpPPQw
+                    oecH5Xhqp2QcDrk0DReU0LefXVQOIQEePgdIAd4e66PeBY8/SoartEvDfwBuNzGNB8VcAp
+                    EVuZHUDgIBsnez497AAjirOwiPGcHZJATT42eh2fVK8pQRI0+bSh8RxzldF/d/aQgkFWms
+                    22SO4VxGMcaxMCdZvPyY0XewcUoiGV1SQdncMzUOaYNw1HZDePSHbzc+lI8jAAAXntLU73
+                    ptPae+c1aSX4i836r5fAVWQwrHPjZvv88irLJBchAAAFiG8MJFtvDCRbAAAAB3NzaC1yc2
+                    EAAAGBAKy0uzrQsCObQlVoWE3GS9k+hLLwmhmjFdjNB0nkD6UY/dnFWvaTbXVIdeQjh9+l
+                    Pi4i3g4lzp6843XLdHWJq85I34PLAXyd2o9y1j/HF25/dldo09vUY924wKPr1iNEqmmG6d
+                    blXOjF5YsZN+QLxLpiH68S2Ro1L/qLxu9wYYh7DLzSOSG65l1Wk1VOdeHFh9me3baoyPS0
+                    4UE3vlV7vPDLPlFw5rJM7bKiCu0pqWRTCqr2a71tFz2LXnJ2bY3v8T6Tz0MKHnB+V4aqdk
+                    HA65NA0XlNC3n11UDiEBHj4HSAHeHuuj3gWPP0qGq7RLw38AbjcxjQfFXAKRFbmR1A4CAb
+                    J3s+PewAI4qzsIjxnB2SQE0+Nnodn1SvKUESNPm0ofEcc5XRf3f2kIJBVprNtkjuFcRjHG
+                    sTAnWbz8mNF3sHFKIhldUkHZ3DM1DmmDcNR2Q3j0h283PpSPIwAAF57S1O96bT2nvnNWkl
+                    +IvN+q+XwFVkMKxz42b7/PIqyyQXIQAAAAMBAAEAAAGARPeLSQprPFzU2Xxovu4v/dn8be
+                    Ss9Q3uPHxrq7M6GCjpvlwUXiEzdcFw6qDRspqvQQdFe4rXfwZZIwITSJioliD9uQiJWHVF
+                    AUHPkvpzPfoCjRdcew3Or40GyK71/XF/R9LLcLh5KK9WYfy5GAUnE3L5yhURw2h392p4D8
+                    fl+vWAearNi82yDpXzEf7aDkWuYVYSnc27KhVNWpjjFgnqwpG3Ghim147m4Q3apSic72ZF
+                    /U2YarW0sSwFlFn8l9C38sslI9CHVc0jbSlqM8OwAYV/3WvGFLliGPucUVAiqZPLd91EHt
+                    ZyFhUaVdOXyd55twUYiPfhuiTaNl7MV/9AM+BJPF5tJrIO0nN3d3uL1JTf/U/YP8IhWWY0
+                    4fanKD6EoEnPmVRSJKAYJ8gNkZ8wljQC3l43pgeVc1/DTKMC7pjpfvp9Uxp9iUE6GfLX2H
+                    xg8TdLMUF4pnMmnko9iWhiYAiH1Jklc2qYqB3SwJbsffg94zr/jgbfros29Ezu268BAAAA
+                    wCrE5ILdZcBbPqSaaZ/1+kr28LmiEkPe5ok8Ufj3ruqScMCraAgJ9mBjEm2JsnR3YP8fkM
+                    dvFBP7Y3w0wgYd0+ut66CCl+qwyMALV+JyeQK9mpY+N69qi4OA7sGZENIBnZzAXEYfdoL3
+                    mmBiGwp3Rei2EmBdWntudMDPJc5N5k/T7V4IWy5CUXlikBzhfbswvOkVIf6Fvj4D0BnODz
+                    7T4jziU8gIoTgREeqn6mtTz/GcMu9QoCaytAUPnF/f8e/J3gAAAMEA2Ql5Ut3+fSuWmY8i
+                    yExip1Yely8xa54peqwp8FaejNL4LEC9CSun1BFdw0puTa1vQlRSR97ymRaB9IsqK/HXFC
+                    /JsYLbL3q1eRU95A95PFCkiNJr1/a8yLwF7I3YQnQqOw5MKuwZf8NY+DH6yaSsZ1t3BhOU
+                    HlsdalJMsRuoJmZGBw6PRzglirGP7SQO79jQSZOC4pomcQllnUn1NsmVeyVk4KD4ByxjRb
+                    dBBB94UnLyGLGGD9RO7cEpuwVO+0rxAAAAwQDLteeR/wn3rmq00F1LKzFpThQJffGHC6sB
+                    +HTWuelkYVt5UZITCoIvrIJkPYkmod21tk8I3zM57swG5x7F16BwRCylxHzLQqd5LR3RDt
+                    OJz0hinUCxroTDYL2T92otNsZtZsTBuubG7T1t3eN5d/nQyAIxAu5K1ANCsvaa5nMAqZwa
+                    cYtbOXHPzTiAhN0nbnAar/pu3/YV+vulGeMyyaj4EG916On7g1PvqZNNy8kRYFvVh7nzD6
+                    Syj+IFIhHQrzEAAAANcHNvbG9tb25AUlVTSAECAwQFBg==
+                    -----END OPENSSH PRIVATE KEY-----
+
+tool:
+  git:
+    installations:
+      - name: git
+        home: /usr/bin/git
+        #home: /usr/local/bin/git
+
+unclassified:
+  themeManager:
+    disableUserThemes: true
+    theme: "darkSystem" # use 'dark' for forcing the dark theme regardless of OS settings
+
+  location:
+    adminAddress: "{{ jenkins_admin_email }}"
+    url:          "http://{{ nginx_jenkins_host }}"
+
+jobs:
+  - script: >
+      folder('testjobs')
+  - script: >
+      pipelineJob('testjobs/test-docker-agent') {
+        definition {
+          cps {
+            sandbox()
+            script("""\
+              pipeline {
+                agent { label 'docker-agent' }
+                stages {
+                  stage ('test') {
+                    steps {
+                      echo "hello world"
+                      git credentialsId: 'ssh_for_ansible', branch: 'main', url: 'git@github.com:psolomon-services/ansible-pihole.git'
+                      sh  "ls -al"
+                    }
+                  }
+                }
+              }""".stripIndent())
+          }
+        }
+      }

@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+PROFILE=aws_all
+[[ $# -ge 1 ]] && PROFILE=$1
+SEARCH_PATH=${PROFILE}
+
+QUERY_PRE=$(cat <<EOF_PRE
+  REPLACE(REPLACE(a.account_aliases[0]::text, '"', ''), 'psolomon-', '')              AS account,
+  lb.region,
+  lb.tags->>'Name'                                                                    AS name_tag,
+  CASE WHEN lb.tags->>'Owner' IS NOT NULL THEN lb.tags->>'Owner' ELSE '-' END         AS owner_tag,
+  CASE WHEN lb.tags->>'CreatedBy' IS NOT NULL THEN lb.tags->>'CreatedBy' ELSE '-' END AS createdby_tag,
+  lb.vpc_id,
+  lb.dns_name
+EOF_PRE
+  )
+
+QUERY_POST=$(cat <<EOF_POST
+INNER JOIN
+  aws_account a ON a.account_id = lb.account_id
+ORDER BY
+  account,
+  region,
+  name_tag
+EOF_POST
+  )
+
+#for LBTYPE in application network classic
+
+echo LBTYPE:  ${LBTYPE}
+QUERY=$(cat <<EOF
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_application_load_balancer lb
+${QUERY_POST}
+
+UNION
+
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_network_load_balancer lb
+${QUERY_POST}
+
+UNION
+
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_classic_load_balancer lb
+${QUERY_POST}
+
+EOF
+  )
+
+echo "$QUERY"
+exit 1
+
+OUTPUT=$(steampipe query --output table --search-path ${SEARCH_PATH} "${QUERY}")
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+printf "${RED}$OUTPUT${NC}\n"

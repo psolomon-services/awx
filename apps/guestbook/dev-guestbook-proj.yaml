@@ -1,0 +1,39 @@
+# $ argocd login --insecure --username admin --password "mywebpassword" argocd.pauljsolomon.net --skip-test-tls
+# $ argocd proj role create-token dev-guestbook-proj ci-role
+# Create token succeeded for proj:dev-guestbook-proj:ci-role.
+#   ID: 0dfa831d-b57e-4237-a50a-1a28af495db3
+#   Issued At: 2024-07-15T08:30:53-05:00
+#   Expires At: Never
+#   Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJwcm9qOmRldi1ndWVzdGJvb2stcHJvajpjaS1yb2xlIiwibmJmIjoxNzIxMDUwMjUzLCJpYXQiOjE3MjEwNTAyNTMsImp0aSI6IjBkZmE4MzFkLWI1N2UtNDIzNy1hNTBhLTFhMjhhZjQ5NWRiMyJ9.kBH3V5dqvymNARIfTOO8-mtDMB--cFW25iB_Aj6SoYQ
+
+---
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: dev-guestbook-proj
+  namespace: argocd
+spec:
+  description: Dev Guestbook Project
+  sourceRepos:
+    - '*'
+
+  destinations:
+  - namespace: default
+    server:    https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+#FATA[0000] rpc error: code = InvalidArgument desc = invalid policy rule 'p, proj:dev-guestbook-proj:ci-role, applications, sync, dev-guest-proj/*, allow': object must be of form 'dev-guestbook-proj/*' or 'dev-guestbook-proj/<APPNAME>', not 'dev-guest-proj/*'
+
+  roles:
+  - name: ci-role
+    description: "Sync privs for dev-project"
+    policies:
+    - p, proj:dev-guestbook-proj:ci-role, applications, sync, dev-guestbook-proj/*, allow
+    - p, proj:dev-guestbook-proj:ci-role, applications, get,  dev-guestbook-proj/*, allow

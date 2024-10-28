@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: awx-ansible-deploy
+  namespace: awx
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: awx-ansible-deploy
+  namespace: awx
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: awx-ansible-deploy-test
+  namespace: awx
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: awx-ansible-deploy-test
+  namespace: awx
+spec:
+  template:
+    metadata:
+      name: awx-ansible-deploy
+      namespace: awx
+    spec:
+      serviceAccountName: awx-ansible-deploy
+      restartPolicy: Never
+      containers:
+        - name: awx-ansible-deploy
+          image: docker.io/library/ansible:1.7
+          command: [ "/bin/bash", "-c", "--" ]
+          #args: [ "cd /root/argocd-test; ./deploy-awx.sh" ]
+          # use for debugging (job will not end, can exec into)
+          args: [ "cd /root/argocd-test; ./deploy-awx.sh; while true; do sleep 30; done;" ]
+          env:
+            - name: AWX_BUILDER_VERSION
+              value: "1.7"

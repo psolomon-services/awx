@@ -1,0 +1,54 @@
+---
+- name: copy dns configuration files to node
+  copy:
+    src:    templates/custom.list
+    dest:   /tmp/custom.list
+  become: true
+  tags:
+    - pihole
+    - pihole-update-dns
+
+- name: copy dns configuration files into the {{ pihole_container_name }} container
+  #shell: docker cp ansible-pihole/roles/pihole-update-dns/templates/{{ item }} {{ pihole_container_name }}:/etc/pihole/{{ item }}
+  shell: docker cp /tmp/custom.list {{ pihole_container_name }}:/etc/pihole/custom.list
+  notify:
+    - restart pihole-FTL service
+  tags:
+    - pihole
+    - pihole-update-dns
+
+- name: set ownership of custom.list file in the {{ pihole_container_name }} container
+  shell: docker exec --user root {{ pihole_container_name }} {{ item }}
+  notify:
+    - restart pihole-FTL service
+  with_items:
+    - chown root:root /etc/pihole/custom.list
+    - chmod 775 /etc/pihole/custom.list
+  tags:
+    - pihole
+    - pihole-update-dns
+
+- name: force all handlers to run, just in case
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - pihole
+    - pihole-update-dns
+
+#- name: NSLOOKUP test pihole existing lookups via nslookup
+#  shell:  "nslookup {{ item }} {{ ansible_host }}"
+#  loop:
+#    - google.com
+#    - jenkins.pauljsolomon.net
+#    - portainer-staging.pauljsolomon.net
+#  register: nslookup_results
+#  delegate_to:   localhost
+#  delay:  5
+#  tags:
+#    - pihole
+#    - pihole-update-dns
+
+#- name:  print results
+#  debug: var=nslookup_results
+#  tags:
+#    - pihole
+#    - pihole-update-dns

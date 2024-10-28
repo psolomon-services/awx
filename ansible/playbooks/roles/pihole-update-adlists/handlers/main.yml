@@ -1,0 +1,5 @@
+---
+- name: restart gravity server
+  shell:  docker exec pihole pihole -g
+  tags:
+    - adlists

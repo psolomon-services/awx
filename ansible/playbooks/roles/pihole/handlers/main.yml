@@ -1,0 +1,38 @@
+---
+- name: restart pihole-FTL service
+  shell:
+    cmd:  docker exec -it {{ pihole_container_name }} pihole restartdns
+  tags:
+    - pihole
+    - pihole-FTL
+
+- name:  restart pihole container
+  shell:  docker restart {{ pihole_container_name }}
+  tags:
+    - pihole
+
+- name: check if reboot required
+  stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+  tags:
+    - pihole
+    - pihole-reboot-check
+
+- name: reboot node
+  reboot:
+    reboot_timeout: 300
+  become:  true
+  when: reboot_required_file.stat.exists == true
+  tags:
+    - pihole
+    - pihole-reboot
+
+- name: reboot not needed
+  debug: msg='reboot not needed'
+  register: reboot_info
+  when: reboot_required_file.stat.exists != true
+  tags:
+    - pihole
+    - pihole-reboot
+    - pihole-reboot-check

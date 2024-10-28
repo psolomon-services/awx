@@ -1,0 +1,31 @@
+---
+- name: install nginx server
+  apt: name=nginx state=latest
+  tags:
+    - nginx
+
+- name: Remove default config
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+
+
+- name: copy nginx listener config to sites-available
+  template:
+    src:    'templates/default.conf.j2'
+    dest:   '/etc/nginx/sites-available/default'
+  tags:
+    - nginx
+
+- name: Enable default Nginx website (sites-enabled)
+  file:
+    src: /etc/nginx/sites-available/default
+    path: /etc/nginx/sites-enabled/default
+    state: link
+
+- name: start nginx
+  service:
+      name: nginx
+      state: started
+  tags:
+    - nginx

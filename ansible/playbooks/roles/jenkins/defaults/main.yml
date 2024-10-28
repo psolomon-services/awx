@@ -1,0 +1,12 @@
+---
+jenkins_admin_username:    'admin'
+jenkins_admin_email:       'services@pauljsolomon.net'
+jenkins_ansible_username:  'ansible'
+jenkins_ansible_email:     'services@pauljsolomon.net'
+
+jenkins_ansible_username:  'ansible'
+jenkins_ansible_email:     'pauljsolomon@gmail.com'
+
+jenkins_container_name:    jenkins
+jenkins_container_image:   jenkins/jenkins:latest
+jenkins_hostname:          jenkins.pauljsolomon.net

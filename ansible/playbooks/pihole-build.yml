@@ -1,0 +1,9 @@
+---
+- name: Pihole Build Image SANDBOX
+  hosts:         pihole-sandbox
+  remote_user:   ansible
+  gather_facts:  true
+
+  roles:
+    #- docker
+    - pihole-build

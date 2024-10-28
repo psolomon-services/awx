@@ -1,0 +1,59 @@
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: nginx-ingress
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /$2
+#spec:
+#  rules:
+#  - http:
+#      paths:
+#      #- pathType: Prefix
+#      - pathType: ImplementationSpecific
+#        #path: "/foo"
+#        #path: "/foo(/|$)(.*)"
+#        path: /foo(/|$)(.*)
+#        backend:
+#          service:
+#            name: foo-service
+#            port:
+##              number: 80
+#      #- pathType: Prefix
+#      - pathType: ImplementationSpecific
+#        #path: "/bar"
+#        #path: /bar(/|$)(.*)
+#        #path: /bar(/|$)(.*)
+#        path: "/bar(/|$)(.*)"
+#        backend:
+#          service:
+#            name: bar-service
+#            port:
+#              number: 80
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: awx.pauljsolomon.net
+      http:
+        paths:
+          - path: /foo
+            pathType: Prefix
+            backend:
+              service:
+                name: foo-service
+                port:
+                  number: 80
+    - host: awx.pauljsolomon.net
+      http:
+        paths:
+          - path: /bar
+            pathType: Prefix
+            backend:
+              service:
+                name: bar-service
+                port:
+                  number: 80

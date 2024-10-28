@@ -1,0 +1,9 @@
+---
+- name: Ping Ansible Hosts
+  hosts:         all
+  remote_user:   ansible
+  gather_facts:  true
+
+  tasks:
+    - name:  print hostvars
+      debug:  var=hostvars[inventory_hostname]

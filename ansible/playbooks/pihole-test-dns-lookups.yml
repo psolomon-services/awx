@@ -1,0 +1,62 @@
+---
+- name: Pihole DNS Lookup Test
+  hosts:         pihole
+  remote_user:   ansible
+  gather_facts:  false
+
+  vars_files:
+    - group_vars/vault.yml
+
+  tasks:
+    - name: NSLOOKUP test pihole existing lookups via nslookup
+      shell:  "nslookup {{ item }} {{ ansible_host }}"
+      loop:
+        - google.com
+        - jenkins.pauljsolomon.net
+      register: nslookup_results
+      delegate_to:   localhost
+      tags:
+        - test_lookups
+        - test_lookups_nslookup
+
+    - name:  print results
+      debug: var=nslookup_results
+      tags:
+        - test_lookups
+        - test_lookups_nslookup
+
+    - name: NSLOOKUP test pihole non-existing lookups via nslookup
+      shell:  "nslookup nonexistantdomain1 {{ ansible_host }}"
+      register: nslookup_results
+      failed_when:
+        - "'NXDOMAIN' not in nslookup_results.stdout"
+      delegate_to:   localhost
+      tags:
+        - test_lookups
+        - test_lookups_nslookup
+
+    - name:  print results
+      #debug: msg="item.item={{item.item}}, item.stdout={{item.stdout}}, item.changed={{item.changed}}"
+      debug: var=nslookup_results
+      tags:
+        - test_lookups
+        - test_lookups_nslookup
+
+#################################################
+
+    # NOTE:  ansible dig module doesn't directly support what we need, shell directly
+    - name:  DIG test, via unbound
+      shell:  "dig {{ item }} @{{ unbound_ip_address }}"
+      register: dig_results
+      loop:
+        - google.com
+        - facebook.com
+      tags:
+        - test_lookups
+        - test_lookups_dig
+
+    - name: print DIG results
+      debug: var=dig_results
+      tags:
+        - test_lookups
+        - test_lookups_dig

@@ -1,0 +1,71 @@
+# https://www.stacksimplify.com/aws-eks/aws-ecr-eks/build-push-docker-images-to-aws-ecr/
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: awx-ansible-deploy
+  namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: awx-test
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: awx-test
+  namespace: default
+
+---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#name: kubeapp-ecr
+#labels:
+#   app: kubeapp-ecr
+#spec:
+#replicas: 2
+#selector:
+#   matchLabels:
+#      app: kubeapp-ecr
+#template:
+#   metadata:
+#      labels:
+#      app: kubeapp-ecr
+#   spec:
+#      containers:
+#      - name: kubeapp-ecr
+#         #image: 180789647333.dkr.ecr.us-east-1.amazonaws.com/aws-ecr-kubenginx:1.0.0
+#         image: 913076961925.dkr.ecr.us-east-1.amazonaws.com/psolomon-services:latest
+#         ports:
+#            - containerPort: 80
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: awx-test
+  namespace: default
+spec:
+  template:
+    metadata:
+      name: awx-test
+      namespace: default
+    spec:
+      serviceAccountName: awx-ansible-deploy
+      restartPolicy: Never
+      containers:
+        - name: awx-test
+          #image: docker.io/library/ansible:1.2
+          image: 913076961925.dkr.ecr.us-east-1.amazonaws.com/psolomon-services:latest
+          #command: [ "/bin/bash", "-c", "--" ]
+          #args: [ "cd /root/argocd-test; ./deploy-awx.sh" ]
+          #args: [ "cd /root/argocd-test; ./deploy-awx.sh; while true; do sleep 30; done;" ]
+
+          command: [ "/bin/bash", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]

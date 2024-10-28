@@ -1,0 +1,6 @@
+.vault-password
+*.swp
+*.log
+argocd-git-secret.yaml
+argocd-test
+.ssh

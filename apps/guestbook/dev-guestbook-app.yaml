@@ -1,0 +1,22 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: guestbook-dev-app
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/refresh: hard
+spec:
+  destination:
+    namespace: default
+    server: "https://kubernetes.default.svc"
+  project: dev-guestbook-proj
+  source:
+    path: apps/guestbook/yaml
+    repoURL: https://github.com/psolomon-services/argocd-test
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

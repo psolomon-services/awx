@@ -1,0 +1,12 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: amicontained
+spec:
+  containers:
+    - name: amicontained
+      #image: r.j3ss.co/amicontained:v0.4.9
+      image: jess/amicontained:v0.4.9
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "amicontained" ]

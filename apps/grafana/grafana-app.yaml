@@ -1,0 +1,46 @@
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: monitoring
+  project: grafana
+
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 61.3.1
+    chart: kube-prometheus-stack
+
+    helm:
+      releaseName: kube-prometheus-stack
+      # override sub-chart (grafana) by putting it in its own section
+      # see:  https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+      values: |
+        grafana:
+          ingress:
+            enabled: true
+            annotations:
+              kubernetes.io/ingress.class: nginx
+              cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+            path: /
+            pathType: Prefix
+            hosts:
+              - grafana.pauljsolomon.net
+          
+            tls:
+              - secretName: grafana-server-tls
+                hosts:
+                  - grafana.pauljsolomon.net
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # from:  https://github.com/argoproj/argo-cd/issues/820
+      - ServerSideApply=true

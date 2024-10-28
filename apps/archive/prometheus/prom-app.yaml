@@ -1,0 +1,46 @@
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: "https://kubernetes.default.svc"
+  project: grafana
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    #targetRevision: 45.6.0
+    targetRevision: 61.1.1
+    chart: kube-prometheus-stack
+
+    helm:
+      values: |
+        grafana:
+          enabled: true
+          defaultDashboardsTimezone: America/Chicago
+          adminPassword: mywebpassword
+          service:
+            enabled: true
+            #type: LoadBalancer
+            type: ClusterIP
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              kubernetes.io/ingress.class: nginx
+            hosts:
+              - grafana.pauljsolomon.net
+            path: /
+            tls:
+             - secretName: grafana-server-tls
+               hosts:
+               - grafana.pauljsolomon.net
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

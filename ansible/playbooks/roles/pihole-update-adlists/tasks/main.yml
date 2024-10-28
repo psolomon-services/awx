@@ -1,0 +1,17 @@
+---
+# TODO: fragile, but works, look for a better solution
+
+- name: empty the adlist in the pihole container
+  shell:  docker exec -u pihole pihole sqlite3 /etc/pihole/gravity.db 'DELETE FROM adlist;'
+  tags:
+    - pihole
+    - pihole-adlists
+
+- name: insert adlist entries into db
+  shell:  docker exec -u pihole pihole sqlite3 /etc/pihole/gravity.db 'INSERT INTO adlist(address,enabled,date_added,date_modified,comment) VALUES ("{{ item.split('|')[2] }}", "{{ item.split('|')[1] }}", strftime("%s","now"), strftime("%s","now"), "{{ item.split('|')[0] }} (via ansible)");'
+  loop: "{{ lookup('file', 'templates/adlists-pre.list').splitlines() }}"
+  notify:
+    - restart gravity server
+  tags:
+    - pihole
+    - pihole-adlists

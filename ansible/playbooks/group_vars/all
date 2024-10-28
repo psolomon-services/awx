@@ -1,0 +1,18 @@
+GROUP:  "Muppet Labs"
+
+# by default, do not force restart of containers (needed for initial troubleshooting)
+force_recreate_container:       false
+# by default, do not force recreation of node mount dirs (needed for initial troubleshooting)
+force_recreate_volume_dirs:     false
+
+ansible_python_interpreter:    "/usr/bin/python3"
+docker_network_name:           "nginx_proxy"
+git_email:                     "services@pauljsolomon.net"
+git_username:                  "Paul J Solomon"
+tz:                            "America/Chicago"
+
+# global IPs (find a better place, prob group_vars)
+unbound_ip_address:            "172.16.1.50"
+awx_postgres_ip_address:       "172.16.1.51"
+
+awx_api_host:                  http://awxapi.pauljsolomon.net

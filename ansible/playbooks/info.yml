@@ -1,0 +1,16 @@
+---
+- name: Info Ansible Hosts
+  hosts:         all
+  remote_user:   ansible
+  gather_facts:  false
+  #become:        true
+
+  tasks:
+    - name: get kernel version for every node
+      shell:  "uname -a; echo; echo; cat /etc/os*"
+      register:  info_results
+      tags:
+        - ping
+
+    - name: print results
+      debug:  var=info_results.stdout

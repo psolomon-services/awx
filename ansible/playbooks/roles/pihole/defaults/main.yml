@@ -1,0 +1,5 @@
+---
+pihole_repo:             'git@github.com:psolomon-services/ansible-pihole.git'
+
+pihole_container_image:  pihole/pihole:latest
+pihole_container_name:   pihole

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+PROFILE=aws_all
+[[ $# -ge 1 ]] && PROFILE=$1
+SEARCH_PATH=${PROFILE}
+
+QUERY_PRE=$(cat <<EOF_PRE
+  account_id,
+  region,
+  vpc_id,
+  dns_name
+EOF_PRE
+  )
+
+QUERY_POST=$(cat <<EOF_POST
+ORDER BY
+  account_id,
+  region
+EOF_POST
+  )
+
+QUERY=$(cat <<EOF000
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_application_load_balancer
+${QUERY_POST}
+UNION
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_network_load_balancer
+${QUERY_POST}
+UNION
+SELECT
+  ${QUERY_PRE}
+FROM
+  aws_ec2_classic_load_balancer
+${QUERY_POST}
+EOF000
+  )
+
+echo "$QUERY"
+
+OUTPUT=$(steampipe query --output table --search-path ${SEARCH_PATH} "${QUERY}")
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+printf "${RED}$OUTPUT${NC}\n"

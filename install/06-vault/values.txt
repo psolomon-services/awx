@@ -1,0 +1,20 @@
+server:
+  # Supported log levels include: trace, debug, info, warn, error
+  logLevel: "info"
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+
+    ingressClassName: "nginx"
+    pathType: Prefix
+
+    hosts:
+      - host: vault.pauljsolomon.net
+        paths: ['/']
+    tls:
+      - secretName: vault-server-tls
+        hosts:
+          - vault.pauljsolomon.net

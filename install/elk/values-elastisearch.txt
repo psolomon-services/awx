@@ -1,0 +1,22 @@
+clusterName: "elk-cluster"
+replicas: 1 
+minimumMasterNodes: 1 
+createCert: true
+secret:
+  enabled: true
+  password: "mywebpassword" # generated randomly if not defined
+image: "docker.elastic.co/elasticsearch/elasticsearch"
+imageTag: "8.5.1"
+resources:
+  requests:
+    cpu: "200m"
+    memory: "500Mi"
+  limits:
+    cpu: "300m"
+    memory: "1Gi"
+ingress:
+  enabled: true
+  hosts:
+    - host: elk.pauljsolomon.net
+      paths:
+        - path: /

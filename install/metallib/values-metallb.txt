@@ -1,0 +1,9 @@
+configInline:
+  address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+        #- 192.168.0.21/30
+        - 192.168.1.50-70
+
+      # can use series like 192.168.0.21-24 too.

@@ -1,0 +1,23 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  #name: "blue-pool"
+  name: "main-pool"
+  namespace: kube-system
+spec:
+  blocks:
+  #- cidr: "1921.168.1.0/24"
+  - start: "192.168.1.50"
+    stop: "192.168.1.70"
+
+  #- start: "172.18.0.200"
+  #  stop: "172.18.0.250"
+  #- start: "172.17.0.200"
+  #  stop: "172.17.0.250"
+
+  #- cidr: "2004::0/64"
+  #- cidr: "10.0.10.0/24"
+  #- cidr: "2004::0/64"
+  #- start: "20.0.20.100"
+  #  stop: "20.0.20.200"
+  #- start: "1.2.3.4"

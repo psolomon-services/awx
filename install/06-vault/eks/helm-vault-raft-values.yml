@@ -1,0 +1,43 @@
+server:
+   affinity: ""
+   ha:
+      enabled: true
+      raft:
+         enabled: true
+         setNodeId: true
+         config: |
+            ui = true
+            cluster_name = "vault-integrated-storage"
+            storage "raft" {
+               path    = "/vault/data/"
+            }
+
+            listener "tcp" {
+               #address = "[::]:8200"
+               address = "0.0.0.0:8200"
+               cluster_address = "[::]:8201"
+               tls_disable = "true"
+            }
+            service_registration "kubernetes" {}
+
+  ingress:
+    enabled: true
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      #alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/healthcheck-path: /sys/health
+      alb.ingress.kubernetes.io/group.name: common-ingress-group
+    ingressClassName: "alb"
+    pathType: Prefix
+    activeService: true
+    hosts:
+      - host: vault.pauljsolomon.net
+        paths: ['/']
+
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  #serviceType: "LoadBalancer"
+  externalPort: 8200

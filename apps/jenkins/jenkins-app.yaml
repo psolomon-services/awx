@@ -1,0 +1,119 @@
+# https://kubebyexample.com/learning-paths/argo-cd/argo-cd-working-helm
+#
+# you can't directly provide a values.txt file:
+# https://akuity.io/blog/argo-cd-helm-values-files/
+#
+# jenkinsci/jenkins --version 5.4.2
+
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: jenkins
+  namespace: argocd
+spec:
+  destination:
+    namespace: jenkins
+    server: "https://kubernetes.default.svc"
+  project: jenkins
+
+  source:
+    chart: jenkins
+    repoURL: "https://charts.jenkins.io"
+    targetRevision: "5.4.2"
+    helm:
+      values: |
+        controller:
+          image:
+            registry: "docker.io"
+            repository: "jenkins/jenkins"
+            #jenkins/jenkins:lts-jdk17
+            #tagLabel: jdk17
+            tagLabel: lts-jdk17
+            pullPolicy: "Always"
+          numExecutors: 2
+          admin:
+            username: "admin"
+            password: mywebpassword
+            #userKey: jenkins-admin-user
+            #passwordKey: jenkins-admin-password
+            #createSecret: true
+            #existingSecret: ""
+          jenkinsAdminEmail: services@pauljsolomon.net
+          installPlugins:
+            - ansible:latest
+            - ant:latest
+            - antisamy-markup-formatter:latest
+            - blueocean:latest
+            - build-timeout:latest
+            - cloudbees-folder:latest
+            - configuration-as-code:latest
+            - credentials-binding:latest
+            - dark-theme:latest
+            - dashboard-view:latest
+            - docker-plugin:latest
+            - docker-workflow:latest
+            - email-ext:latest
+            - git:latest
+            - github:latest
+            - github-branch-source:latest
+            - github-pullrequest:latest
+            - gradle:latest
+            - javax-mail-api:latest
+            - job-dsl:latest
+            - kubernetes:latest
+            - ldap:latest
+            - mailer:latest
+            - matrix-auth:latest
+            - maven-plugin:latest
+            - pam-auth:latest
+            - permissive-script-security:latest
+            - pipeline-github-lib:latest
+            - pipeline-stage-view:latest
+            - pipeline-utility-steps:latest
+            - role-strategy:latest
+            - simple-theme-plugin:latest
+            - sshd:latest
+            - ssh-slaves:latest
+            - timestamper:latest
+            - view-job-filters:latest
+            - workflow-aggregator:latest
+            - workflow-cps:latest
+            - ws-cleanup:latest
+          installLatestPlugins: true
+          installLatestSpecifiedPlugins: true
+          initializeOnce: false
+          JCasC:
+            defaultConfig: false
+          ingress:
+            enabled: true
+            apiVersion: "extensions/v1"
+            annotations:
+              kubernetes.io/ingress.class: nginx
+              cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+            ingressClassName: nginx
+            hostName: jenkins.pauljsolomon.net
+            tls:
+             - secretName: jenkins-server-tls
+               hosts:
+                 - jenkins.pauljsolomon.net
+
+        # https://sbulav.github.io/kubernetes/kubernetes-mounting-config-map-as-single-file/
+        persistence:
+          enabled: true
+          volumes:
+           - name: jenkins-casc
+             configMap:
+               name: jenkins-casc
+          mounts:
+            - mountPath: /var/jenkins_home/casc_configs/casc.yaml
+              subPath: casc.yaml
+              name: jenkins-casc
+              readOnly: true
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

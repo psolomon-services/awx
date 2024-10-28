@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# https://metallb.universe.tf/installation/
+
+NAMESPACE=metallb
+
+echo
+echo creating namespace ${NAMESPACE}
+set +e
+kubectl create ns ${NAMESPACE}
+set -e
+
+echo
+echo installing metallb via helm
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb
+
+#helm install -n metallb-system metallb metallb/metallb -f values.yaml
+helm install -n metallb-system metallb metallb/metallb
+
+# https://metallb.universe.tf/installation/
+#kubectl edit configmap -n kube-system kube-proxy
+

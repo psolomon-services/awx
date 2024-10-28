@@ -1,0 +1,39 @@
+---
+# kubectl create clusterrole readonlyuser --verb=get --verb=list --verb=watch --resource=pods,services,daemonsets,deployments,cronjobs,horizontalpodautoscalers,replicasets,replicationcontrollers,statefulsets,jobs
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: readonlyuser
+  namespace: default
+rules:
+  - apiGroups: ['']
+    resources: [
+      "pods",
+      "pods/log",
+      "replicationcontrollers",
+      "services",
+    ]
+    verbs: ['get', 'watch', 'list']
+
+  - apiGroups: ['apps']
+    resources: [
+      "daemonsets",
+      "deployments",
+      "replicasets",
+      "statefulsets",
+    ]
+    verbs: ['get', 'watch', 'list']
+
+  - apiGroups: ['batch']
+    resources: [
+      "jobs",
+      "cronjobs",
+    ]
+    verbs: ['get', 'watch', 'list']
+
+  - apiGroups: ['autoscaling']
+    resources: [
+      "horizontalpodautoscalers",
+    ]
+    verbs: ['get', 'watch', 'list']

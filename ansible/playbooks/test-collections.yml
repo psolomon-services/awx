@@ -1,0 +1,33 @@
+---
+# NOTE:  install with:  `ansible-galaxy install -r collections/requirements.yml`
+
+- name: Collections Test STAGING
+  hosts:         deploy1
+  remote_user:   ansible
+  gather_facts:  false
+
+  collections:
+    - community.general
+
+  tasks:
+    # add:
+    - name: TEST COLLECTIONS DOWNLOAD Allow sudo group to have passwordless sudo for fully-automated deploys
+      community.general.sudoers:
+        name:        TEST-passwordless-sudo-for-ansible
+        state:       present
+        group:       admin
+        nopassword:  true
+        commands:    ALL
+        validation:  required
+      become: true
+      tags:
+        - collections-test
+
+    # remove:
+    - name: TEST COLLECTIONS DOWNLOAD UNDO Allow sudo group to have passwordless sudo for fully-automated deploys
+      community.general.sudoers:
+        name:        TEST-passwordless-sudo-for-ansible
+        state:       absent
+      become: true
+      tags:
+        - collections-test

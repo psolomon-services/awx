@@ -1,0 +1,22 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: canary-test-project
+  namespace: argocd
+  #annotations:
+  #  argocd.argoproj.io/refresh: hard
+spec:
+  destination:
+    namespace: default
+    server: "https://kubernetes.default.svc"
+  project: canary-test-project
+  source:
+    path: apps/canary-test/yaml
+    repoURL: git@github.com:psolomon-services/argocd-test
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

@@ -1,0 +1,29 @@
+ ---
+  2 apiVersion: networking.k8s.io/v1
+  3 kind: Ingress
+  4 metadata:
+  5   name: notifications-service-active
+  6   namespace: default
+  7
+  8   annotations:
+  9     kubernetes.io/ingress.class: alb
+ 10
+ 11     alb.ingress.kubernetes.io/group.name: common-ingress-group
+ 12     alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+ 13
+ 14     alb.ingress.kubernetes.io/target-type: ip
+ 15     alb.ingress.kubernetes.io/scheme: internet-facing
+ 16
+ 17 spec:
+ 18   ingressClassName: alb
+ 19   rules:
+ 20   - host: bluegreenactive.pauljsolomon.net
+ 21     http:
+ 22       paths:
+ 23       - path: /
+ 24         pathType: Prefix
+ 25         backend:
+ 26           service:
+ 27             name: rollout-bluegreen-active
+ 28             port:
+ 29               number: 80

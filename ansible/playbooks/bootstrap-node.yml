@@ -1,0 +1,45 @@
+--- 
+# * this will run as `ansible` and assumes that user has sudo access on the box (doesn't require passwordless sudo)
+# * ansible-playbook bootstrap.yml --extra-vars "host=staging user=ansible" --ask-pass -e "ansible_sudo_pass={{ ansible_password }}" -k
+
+- name: Bootstrap Ansible Hosts
+  hosts:          all
+  remote_user:    ubuntu
+  gather_facts:   true
+
+  vars_files:
+    - group_vars/vault.yml
+
+# install kubectl:  https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+# curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+#
+# install k9s:  https://webinstall.dev/k9s/
+# curl -sS https://webi.sh/k9s | sh
+#
+# install go:
+
+# make sure you uninstall go remnants first:  
+# (see https://stackoverflow.com/questions/16977703/cant-get-golang-to-work-in-ubuntu)
+#
+# dpkg -l|grep golang  #  if you see any, run following cmd to remove
+# sudo apt-get purge golang-*
+# Verify whether go is still installed
+# type go    # see if go is installed
+# typical output if go is installed
+# go is hashed (/usr/local/go/bin/go)
+# if go is installed remove it
+#
+# sudo rm -rf /usr/local/go     #  not just /usr/local/go/bin/go
+#
+# install go, part 2:
+# https://www.cyberciti.biz/faq/how-to-install-gol-ang-on-ubuntu-linux/
+
+
+  roles:
+    - users
+    - timezone
+    - git
+    - upgrade-node
+    - docker
+    - nginx-proxy
+    - { role: gantsign.minikube, minikube_download_dir: '/tmp/downloads' }

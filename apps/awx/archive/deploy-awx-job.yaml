@@ -1,0 +1,24 @@
+# kubectl exec -it ansible -- bash -c "cd /root/argocd-test; ansible-playbook ansible/playbooks/ping.yml"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: awx-ansible-deploy
+  namespace: awx
+spec:
+  template:
+    metadata:
+      name: awx-ansible-deploy
+      namespace: awx
+    spec:
+      containers:
+        - name: awx-ansible-deploy
+          image: docker.io/library/ansible:1.2
+          command: [ "/bin/bash", "-c", "--" ]
+          #args: [ "cd /root/argocd-test; ls -al; ./deploy-awx.sh" ]
+          args: [ "cd /root/argocd-test; ls -al; ./deploy-awx.sh; while true; do sleep 30; done;" ]
+
+          #command: [ "/bin/bash", "-c", "--" ]
+          #args: [ "while true; do sleep 30; done;" ]
+      restartPolicy: Never

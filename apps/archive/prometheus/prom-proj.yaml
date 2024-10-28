@@ -1,0 +1,31 @@
+---
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  description: Prometheus Project
+  sourceRepos:
+    - '*'
+
+  destinations:
+  - namespace: monitoring
+    server:    https://kubernetes.default.svc
+  - namespace: kube-system
+    server:    https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  #roles:
+  #- name: ci-role
+  #  description: "Sync privs for dev-project"
+  #  policies:
+  #  - p, proj:dev-project:ci-role, applications, sync, dev-project/*, allow
+  #  - p, proj:dev-project:ci-role, applications, get,  dev-project/*, allow

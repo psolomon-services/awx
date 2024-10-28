@@ -1,0 +1,29 @@
+---
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  description: Dev Jenkins Project
+  sourceRepos:
+    - '*'
+
+  destinations:
+  - namespace: argocd
+    server:    https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  #roles:
+  #- name: ci-role
+  #  description: "Sync privs for dev-project"
+  #  policies:
+  #  - p, proj:dev-project:ci-role, applications, sync, dev-project/*, allow
+  #  - p, proj:dev-project:ci-role, applications, get,  dev-project/*, allow

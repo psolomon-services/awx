@@ -1,0 +1,22 @@
+---
+- name: Pihole Setup SANDBOX
+  hosts:         pihole
+  remote_user:   ansible
+  gather_facts:  true
+
+  vars_files:
+    - group_vars/vault.yml
+    #TODO: NOT SURE WE NEED THIS
+    - roles/unbound/defaults/main.yml
+
+  vars:
+    # recreate all docker containers and volume dirs when deploying (nginx-proxy, unbound, and pihole)
+    - force_recreate_container:    true
+
+  roles:
+    - docker
+    - unbound
+    - nginx-proxy
+    - pihole
+    - pihole-update-dns
+    - pihole-update-adlists

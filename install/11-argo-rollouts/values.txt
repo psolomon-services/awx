@@ -1,0 +1,44 @@
+---
+dashboard:
+  enabled: true
+  replicas: 1
+
+  #service:
+  #  type: ClusterIP
+  #  #type: LoadBalancer
+  #  portName: dashboard
+  #  #port: 3100
+  #  port: 8080
+  #  #targetPort: 3100
+  #  targetPort: 8080
+  #  #nodePort:
+
+  ingress:
+    enabled: true
+
+    ingressClassName: "nginx"
+
+    annotations:
+      cert-manager.io/cluster-issuer: test-ca-cluster-issuer
+      kubernetes.io/ingress.class: nginx
+
+      #alb.ingress.kubernetes.io/group.name: common-ingress-group
+      #alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+      #alb.ingress.kubernetes.io/target-type: ip
+      #alb.ingress.kubernetes.io/scheme: internet-facing
+
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/ssl-redirect: 'false'
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+      nginx.ingress.kubernetes.io/proxy-body-size: 10000m
+
+    hosts:
+      - rollouts.pauljsolomon.net
+    paths:
+      - /
+    pathType: Prefix
+    tls:
+       - secretName: rollouts-dashboard-server-tls
+         hosts:
+           - rollouts.pauljsolomon.net

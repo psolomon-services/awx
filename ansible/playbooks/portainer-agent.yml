@@ -1,0 +1,16 @@
+---
+- name: Portainer Agent Deploy SANDBOX
+  hosts:         all,!staging1,!services1
+  remote_user:   ansible
+  gather_facts:  true
+
+  vars_files:
+    - group_vars/vault.yml
+
+  vars:
+    # recreate all docker containers and volume dirs when deploying (nginx-proxy, unbound, and pihole)
+    - force_recreate_container:  true
+
+  roles:
+    - docker
+    - portainer-agent

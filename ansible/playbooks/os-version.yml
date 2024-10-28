@@ -1,0 +1,13 @@
+---
+- name: Print OS Version
+  hosts:         deploy1
+  remote_user:   ansible
+  gather_facts:  true
+
+  tasks:
+    - name: get os version
+      shell:  "grep VERSION= /etc/os-release"
+      register: myvar
+
+    - name: print results
+      debug:  var=myvar

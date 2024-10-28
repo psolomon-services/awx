@@ -1,0 +1,84 @@
+# - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+# - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+configs:
+  cm:
+    # -- Timeout to discover if a new manifests version got published to the repository
+    #timeout.reconciliation: 180s
+    timeout.reconciliation: 30s
+    # -- Timeout to refresh application data as well as target manifests cache
+    #timeout.hard.reconciliation: 0s
+    timeout.hard.reconciliation: 30s
+
+  secret:
+    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+    # htpasswd -nbBC 10 "" mywebpassword | tr -d ':\n' | sed 's/$2y/$2a/'
+    argocdServerAdminPassword: "$2a$10$gO3XyeyNHZX6es2QPgTTVuqEcT2QD2eyveerOPxQDWLhU2.vSr15q"
+    # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+    #argocdServerAdminPasswordMtime: ""
+
+server:
+  service:
+    type: ClusterIP
+    # use LB in EKS for argocd until ingress is solved with grpc
+    #type: LoadBalancer
+
+  ingress:
+    enabled: false
+    tls: true
+
+    hostname: argocd.pauljsolomon.net
+    path: /
+    pathType: Prefix
+    #pathType: ImplementationSpecific
+
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+
+      alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+      alb.ingress.kubernetes.io/group.name: common-ingress-group
+    controller: generic
+    #controller: aws
+    #ingressClassName: nginx
+    ingressClassName: alb
+
+    #aws:
+      #backendProtocolVersion: HTTP
+      #serviceType: NodePort
+
+  ingressGrpc:
+    enabled: false
+    tls: false
+
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+      alb.ingress.kubernetes.io/group.name: common-ingress-group
+
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+      alb.ingress.kubernetes.io/ssl-passthrough: "true"
+      alb.ingress.kubernetes.io/force-ssl-redirect: "false"
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      kubernetes.io/ingress.class: alb
+
+    hostname: grpc.argocd.pauljsolomon.net
+    path: /
+    #pathType: ImplementationSpecific
+    pathType: Prefix
+    #controller: generic
+    controller: aws
+    ingressClassName: alb
+
+    aws:
+      backendProtocolVersion: GRPC
+      serviceType: NodePort
+
+  metrics:
+    enabled: true

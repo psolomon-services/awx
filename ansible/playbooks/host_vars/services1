@@ -1,0 +1,12 @@
+ENV:                   PROD
+APP:                   SERVICES
+ansible_host:          192.168.1.187  #services.pauljsolomon.net
+jenkins_hostname:      jenkins-main
+nginx_awx_host:        awx.pauljsolomon.net
+nginx_jenkins_host:    jenkins.pauljsolomon.net
+nginx_pihole_host:     plex.pauljsolomon.net
+nginx_plex_host:       plex.pauljsolomon.net
+nginx_portainer_host:  portainer.pauljsolomon.net
+pihole_hostname:       plex-main
+plex_hostname:         plex-staging
+portainer_hostname:    portainer

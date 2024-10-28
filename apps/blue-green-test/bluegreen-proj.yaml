@@ -1,0 +1,21 @@
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: blue-green-test-project
+  namespace: argocd
+spec:
+  description: Test Argo Blue-Green Project
+  sourceRepos:
+    - '*'
+
+  destinations:
+  - namespace: default
+    server:    https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+  - group: '*'
+    kind:  '*'
+
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind:  '*'

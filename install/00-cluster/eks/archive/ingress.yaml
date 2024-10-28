@@ -1,0 +1,79 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: apps-ingress
+  namespace: apps
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/group.name: common-ingress-group
+spec:
+  ingressClassName: alb
+  defaultBackend:
+    service:
+      name: error
+      port:
+        name: svc-port
+  rules:
+    - host: first.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: first
+                port:
+                  name: svc-port
+    - host: argocd.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: first
+                port:
+                  name: svc-port
+    - host: second.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: second
+                port:
+                  name: svc-port
+    - host: third.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: third
+                port:
+                  name: svc-port
+    - host: fourth.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fourth
+                port:
+                  name: svc-port
+    - host: error.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: error
+                port:
+                  name: svc-port

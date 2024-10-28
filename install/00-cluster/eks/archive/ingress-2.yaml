@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: apps-ingress-2
+  namespace: apps
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: apps-ingress
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/group.name: common-ingress-group
+spec:
+  ingressClassName: alb
+  rules:
+    - host: firsta.pauljsolomon.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: first
+                port:
+                  name: svc-port

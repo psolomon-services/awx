@@ -1,0 +1,248 @@
+---
+- name: awx-config-jobs print demo url
+  debug:  var=awx_api_host
+
+- name: create awx nginx deploy job
+  awx.awx.job_template:
+    name:                   'NGINX deploy'
+    playbook:               'ansible/playbooks/nginx.yml'
+    job_type:               run
+    organization:           '{{ org_name }}'
+    inventory:              '{{ inventory_name }}'
+    project:                '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+    # xanadu is temporarily shut down
+    #limit:                  '!xanadu'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: create awx ping job
+  awx.awx.job_template:
+    name:                   'MISC ping'
+    playbook:               'ansible/playbooks/ping.yml'
+    job_type:               run
+    organization:           '{{ org_name }}'
+    inventory:              '{{ inventory_name }}'
+    project:                '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+    # xanadu is temporarily shut down
+    #limit:                  '!xanadu'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: create awx info job
+  awx.awx.job_template:
+    name:                   'MISC info'
+    playbook:               'ansible/playbooks/info.yml'
+    job_type:               run
+    organization:           '{{ org_name }}'
+    inventory:              '{{ inventory_name }}'
+    project:                '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: "create awx pihole deploy job"
+  awx.awx.job_template:
+    name:                     'PIHOLE {{item.label }} deploy'
+    playbook:                 'ansible/playbooks/pihole.yml'
+    job_type:                 run
+    limit:                    'pihole-{{ item.env }}'
+    diff_mode:                true
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ vault_credential_name }}'
+      - '{{ ssh_machine_credential_name }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+  loop:
+    - { env: 'prod',    label:  'PROD' }
+    - { env: 'staging', label:  'STAGING' }
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: "create awx pihole dns {{ item.label }} update job"
+  awx.awx.job_template:
+    name:                     'PIHOLE {{ item.label }} update local dns config'
+    playbook:                 'ansible/playbooks/pihole-update-dns.yml'
+    job_type:                 run
+    limit:                    'pihole-{{ item.env }}'
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+      - '{{ vault_credential_name }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+  loop:
+    - { env: 'prod',    label:  'PROD' }
+    - { env: 'staging', label:  'STAGING' }
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: "create awx pihole adlist {{ item.label }} update job"
+  awx.awx.job_template:
+    name:                     'PIHOLE {{ item.label }} update adlists'
+    playbook:                 'ansible/playbooks/pihole-update-adlists.yml'
+    job_type:                 run
+    limit:                    'pihole-{{ item.env }}'
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+      - '{{ vault_credential_name }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+  loop:
+    - { env: 'prod',    label:  'PROD' }
+    - { env: 'staging', label:  'STAGING' }
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: "create awx jenkins {{ item.label }} deploy job"
+  awx.awx.job_template:
+    name:                     'JENKINS {{ item.label }} deploy'
+    playbook:                 'ansible/playbooks/jenkins.yml'
+    job_type:                 run
+    limit:                    'jenkins-{{ item.env }}'
+    diff_mode:                true
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+      - '{{ vault_credential_name }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+  loop:
+    - { env: 'prod',    label:  'PROD' }
+    - { env: 'staging', label:  'STAGING' }
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: create awx vault test job
+  awx.awx.job_template:
+    name:                     'MISC vault test secrets'
+    playbook:                 'ansible/playbooks/test-vault-secrets.yml'
+    job_type:                 run
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+      - '{{ vault_test_credential_name }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: create awx collections test job
+  awx.awx.job_template:
+    name:                     'MISC collections test'
+    playbook:                 'ansible/playbooks/test-collections.yml'
+    job_type:                 run
+    organization:             '{{ org_name }}'
+    inventory:                '{{ inventory_name }}'
+    project:                  '{{ project_name }}'
+    credentials:
+      - '{{ ssh_machine_credential_name }}'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:    '{{ awx_access_token0 }}'
+    ask_tags_on_launch:       true
+    ask_job_type_on_launch:   true
+    ask_limit_on_launch:      true
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui
+
+- name: Create a PROD workflow job template with workflow nodes in template
+  awx.awx.workflow_job_template:
+    name:                   'PIHOLE PROD WORKFLOW -- STAGING -> PROD'
+    description:            'pihole workflow, including project and inventory updates'
+    inventory:              '{{ inventory_name }}'
+    organization:           '{{ org_name }}'
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+
+    # workflow:
+    #   1. update project from git
+    #   2. if successful, update inventory source from git
+    #   3. if successful, run staging pihole deploy
+    #   4. if successful, run prod pihole deploy for pihole2
+    #   5. if successful, run prod pihole deploy for pihole1
+
+    workflow_nodes:
+      - identifier: sync_services_project
+        unified_job_template:
+          name: 'services'
+          type: project 
+        related:
+          success_nodes:
+            - identifier: sync_inventory
+      - identifier: sync_inventory
+        unified_job_template:
+          name: 'github inventory source'
+          type: inventory_source
+        related:
+          success_nodes:
+            - identifier: deploy_staging
+      - identifier: deploy_staging
+        unified_job_template:
+          name: 'PIHOLE STAGING deploy'
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: deploy_prod
+      - identifier: deploy_prod
+        unified_job_template:
+          name: 'PIHOLE PROD deploy'
+          type: job_template
+  #when: (ENV == 'PROD')  and (not ansible_check_mode)
+  tags:
+    - awx
+    - awx_ui

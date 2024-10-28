@@ -1,0 +1,3 @@
+APP:                 SERVICES
+ENV:                 SERVICES
+portainer_endpoint:  "http://192.168.1.178:9085/api"

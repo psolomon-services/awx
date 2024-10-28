@@ -1,0 +1,16 @@
+---
+- name: Add AWX user as a system administrator
+  awx.awx.user:
+    username:               '{{ awx_default_user_username }}'
+    password:               '{{ secrets.awx.awx_default_user_password }}'
+    email:                  '{{ awx_default_user_email }}'
+    organization:           '{{ org_name }}'
+    superuser:              true
+    state:                  present
+
+    controller_host:        '{{ awx_api_host }}'
+    controller_oauthtoken:  '{{ awx_access_token0 }}'
+  when: not ansible_check_mode
+  tags:
+    - awx
+    - awx_ui

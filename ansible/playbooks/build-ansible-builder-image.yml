@@ -1,0 +1,22 @@
+---
+- name: Build Ansible Builder Image
+  hosts:         deploy1
+  remote_user:   ansible
+  gather_facts:  false
+  become:        false
+
+  tasks:
+    - name: build the image
+      shell:  |
+        cd repos/argocd-test/apps/awx/build
+        cat VERSION
+        ./build.sh
+      register:  results
+
+    - name: build the image
+      shell:  |
+        cd repos/argocd-test/apps/awx/build
+        cat VERSION
+
+    - name: print results
+      debug:  var=results.stdout

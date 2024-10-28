@@ -1,0 +1,11 @@
+---
+# NOTE:  AWX automatically uses this file, but locally you need to install it via:
+# ansible-galaxy install -r collections/requirements.yml
+
+collections:
+- community.general
+- community.docker
+- awx.awx
+
+#- name: awx.awx
+#  version: '17.1.0'
