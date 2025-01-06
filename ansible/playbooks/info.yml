@@ -2,7 +2,7 @@
 - name: Info Ansible Hosts
   hosts:         all
   remote_user:   ansible
-  gather_facts:  false
+  gather_facts:  true
   #become:        true
 
   tasks:
