@@ -1,6 +1,6 @@
 ---
 - name: Ping Ansible Hosts
-  hosts:         all
+  hosts:         localhost
   remote_user:   ansible
   gather_facts:  false
 
